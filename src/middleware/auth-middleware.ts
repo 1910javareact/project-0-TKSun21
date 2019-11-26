@@ -5,7 +5,7 @@ export function authorization(authRoles:string[]){
             res.status(401).send('You must login')
             return
         }
-        for(let userRole of req.session.user.roles){
+        for(const userRole of req.session.user.roles){
             if(authRoles.includes(userRole)){
                 isAuth = true
             }

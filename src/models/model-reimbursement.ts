@@ -21,3 +21,21 @@ export class Reimbursement {
             this.type = type
         }
   }
+
+  export class ReimbursementType {
+    typeId: number // primary key
+    type: string // not null, unique
+    constructor (typeId: number, type:string){
+        this.typeId = typeId
+        this.type = type
+    }
+}
+
+export class ReimbursementStatus {
+    statusId: number, // primary key
+    status: string // not null, unique
+    constructor (statusId: number, status: string){
+        this.statusId = statusId
+        this.status = status
+    }
+}

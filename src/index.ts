@@ -11,13 +11,13 @@ app.use(loggingMiddleware)
 app.use(sessionMiddleware)
 app.use('/users', userRouter)
 
-app.post('/login', (req,res) =>{
+app.post('/login', async (req,res) =>{
     let {username, password} = req.body
     if(!username || !password) {
         res.status(400).send('Please have a username and password field')
     }
     try{
-        let user = getUserByUsernameAndPassword(username, password)
+        let user = await getUserByUsernameAndPassword(username, password)
         req.session.user = user
         res.json(user)
     }catch(e){
