@@ -1,66 +1,121 @@
-import express from 'express';
-import * as pservice from '../services/post-service';
-import { Reimbursement } from '../models/model-reimbursement';
-import { authorization } from '../middleware/auth-middleware';
-import { Users } from '../models/model-user';
+import express from "express"
+import * as reimServices from "../services/reim-service"
+import { authorization } from "../middleware/auth-middleware"
+import { Reimbursement } from "../models/model-reimbursement"
 
-export const reimRouter = express.Router()
+export const reimbursementRouter = express.Router()
 
-reimRouter.get('/reimbursements/status/:statusId', [authorization['Finance-manager']], async (req,res) => {
-    const id = +req.params.id;
-    if(isNaN(id)){
-        res.sendStatus(400)
-    } else {
-        try{
-            const reimId = await getReimById(id)
-            res.json(reimId)
-        } catch(e){
-            res.status(e.status).send(e.message)
-        }
+reimbursementRouter.get('/status/:statusId', [authorization(['Finance Manager'])], async (req, res) =>{
+    
+    let statusId = +req.params.statusId
+    
+    if(isNaN(statusId)){
+        res.status(400).send('Invalid ID')
     }
-}
-
-reimRouter.get('/reimbursements/author/userId/:userId', [authorization(['Users','Finance-manager'])], async (req,res) => {
-    const id = +req.params.id;
-    if(isNaN(id)){res.sendStatus(400)
-    } else {
+    else{
         try{
-            const reimUser =  await getReimByUser(id)
-            res.json(reimUser)
-        } catch (e){
+            let reim = await reimServices.getReimbursementByStatusId(statusId)
+            res.status(200).json(reim)
+        }
+        catch(e){
             res.status(e.status).send(e.message)
         }
     }
 })
 
-reimRouter.post('/reimbursements', [authorization(['Users']),
-    async (req, res) => {
-        const {body} = req
-        const newU = new Users(0,'','','','','',[])
-        for (const key in newU){
-            if(body[key] === undefined){
-                res.status(400).send('Please include all fields')
-                break;
-            } else {
-                newU[key] = body[key]
+reimbursementRouter.get('/author/userId/:userId', [authorization(['Finance Manager', 'Admin', 'User'])], async (req, res)=>{
+    let userId = +req.params.userId
+    if(isNaN(userId)){
+        res.status(400).send('Invalid ID')
+    }
+    else if(req.session.user.role.role === 'Finance Manager'){
+        try{
+            let reim = await reimServices.getReimbursementByUserId(userId)
+            res.status(200).json(reim)
+        }
+        catch(e){
+            console.log(e);
+            
+            res.status(e.status).send(e.message)
+        }
+    }
+    else{
+        try{
+            let reim = await reimServices.getReimbursementByUserId(userId)
+            if(req.seession.user.userId === reim[0].author){
+                res.status(200).json(reim)
+            }
+            else{
+                res.status(401).send('Unathorized')
             }
         }
-        try{
-            const user = await saveOneReim(newU)
-            res.status(201).json(user)
-        } catch (e) {
-            res.status(e.status).send(e.message);
+        catch(e){
+            res.status(e.status).send(e.message)
         }
     }
-])
+})
 
-reimRouter.patch('/reimbursements', [authorization(['Finance-manager']), (req,res) => {
-    const id = +req.params.id;
-    const reim = req.session.user;
-    try {
-        const post = pservice.likePost(id, reim);
-        res.json(post);
-    } catch (e) {
-        res.status(e.status).send(e.message);
+reimbursementRouter.post('',[authorization(['Finance Manager', 'Admin', 'User'])], async (req, res) => {
+    
+    let {body} = req
+
+    let newReim = new Reimbursement(0,0,0,0,0,'',0,0,0)
+        try{    
+            for(let key in newReim){
+
+                if(body[key] === undefined){
+
+                    res.status(400).send('All fields are required for a reimbursement')
+                    break
+                }
+                else{
+                    newReim[key] = body[key]
+                }
+            }
+            if(await reimServices.saveOneReimbursement(newReim)){
+                res.sendStatus(201)
+            }
+            else{
+                res.status(404).send('Reimbursement does not exist')
+            }
+        }
+        catch(e){
+            res.status(e.status).send(e.message)
+        }
+    
+})
+
+reimbursementRouter.patch('', authorization(['Finance Manager']), async (req, res)=>{
+    try{
+        let {body} = req
+        
+        let newReim = new Reimbursement(0,0,0,0,0,'',0,0,0)
+
+        newReim.reimbursementId = body.reimbursementId
+
+        newReim.status = body.status
+        
+        let update = await reimServices.updateReimbursement(newReim)
+
+        if(update){
+            res.status(200).json(update)
+        }
+        else{
+            res.status(404).send(`Not found`)
+        }
     }
-}]))
+    catch(e){
+        res.status(e.status).send(e.message)
+    }
+})
+
+reimbursementRouter.get('', authorization(['Finance Manager']), async (req, res) =>{
+    try{
+        let allReim = await reimServices.getAllReimbursements()
+
+        res.status(200).json(allReim)
+    }
+    catch(e){
+        res.status(e.status).send(e.message)
+    }
+})

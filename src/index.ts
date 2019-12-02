@@ -1,30 +1,34 @@
 import express from 'express'
-import bodyparser from 'body-parser'
-import { userRouter } from './routers/user-router'
-import { loggingMiddleware } from './middleware/logging-middleware'
+import bodyParser from 'body-parser'
 import { sessionMiddleware } from './middleware/session-middleware'
 import { getUserByUsernameAndPassword } from './services/user-service'
+import { userRouter } from './routers/user-router'
+import { reimbursementRouter } from './routers/reimbursement-router';
 
 const app = express()
-app.use(bodyparser.json())
-app.use(loggingMiddleware)
+app.use(bodyParser.json())
 app.use(sessionMiddleware)
-app.use('/users', userRouter)
 
-app.post('/login', async (req,res) =>{
+app.post(`/login`, async (req, res)=>{
     let {username, password} = req.body
-    if(!username || !password) {
-        res.status(400).send('Please have a username and password field')
+    if(!username || !password){
+        res.status(400).send(`Invalid Credentials`)
     }
     try{
         let user = await getUserByUsernameAndPassword(username, password)
         req.session.user = user
         res.json(user)
-    }catch(e){
+    }
+    catch(e){
+        console.log(e);
+        
         res.status(e.status).send(e.message)
     }
 })
 
-app.listen(1001, ()=>{
-    console.log('app has started');   
+app.use(`/users`, userRouter)
+app.use(`/reimbursements`, reimbursementRouter)
+
+app.listen(2020, ()=>{
+    console.log(`app has started`);
 })

@@ -1,24 +1,47 @@
-import * as rdao from '../repositories/user-dao';
-import { User, Users } from '../models/model-user';
+import * as daoReim from "../repositories/reimbursement-dao"
+import { Reimbursement } from "../models/model-reimbursement";
 
-export function getAllUsers(): Promise<Users[]> {
-
-    try {
-        return await daoGetAllUsers();
-    } catch (e) {
-        throw e;
+export async function getAllReimbursements():Promise<Reimbursement[]>{
+    try{
+        return await daoReim.daoGetAllReimbursements()
+    }
+    catch(e){
+        throw e
     }
 }
 
-export function saveOneUser(u: Users): Promise<Users> {
-    return daoSaveOneUser(u);
+export async function saveOneReimbursement(reimbursement:Reimbursement):Promise<Reimbursement>{
+    try{
+        return await daoReim.daoSaveOneReimbursement(reimbursement)
+    }
+    catch(e){
+        throw e
+    }
 }
 
-export function updateInfo (id: number, user: Users){
-    const reim = udao.daoFindUserById(id);
-    for(let i = 0; i < post.userWhoLiked.length; i++) {
-        if(post.userWhoLiked[i].id === user.id) {
-            post
-        }
+export async function getReimbursementByStatusId(id:number):Promise<Reimbursement[]>{
+    try{
+        return await daoReim.daoReimbursementByStatusId(id)
     }
+    catch(e){
+        throw e
+    }
+}
+
+export async function getReimbursementByUserId(id:number):Promise<Reimbursement[]>{
+    try{
+        return await daoReim.daoGetReimbursementByUserId(id)
+    }
+    catch(e){
+        throw e
+    }
+}
+
+export async function updateReimbursement(reimbursement:Reimbursement):Promise<Reimbursement>{
+    try{
+        return await daoReim.daoUpdateReimbursement(reimbursement)
+     }
+    catch(e){
+        throw e
+    }    
 }

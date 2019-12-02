@@ -1,7 +1,7 @@
 export class Reimbursement {
     reimbursementId: number // primary key
-    author: number  // foreign key -> User, not null
-    amount: number  // not null
+        author: number  // foreign key -> User, not null
+        amount: number  // not null
     dateSubmitted: number // not null
     dateResolved: number // not null
     description: string // not null
@@ -32,7 +32,7 @@ export class Reimbursement {
 }
 
 export class ReimbursementStatus {
-    statusId: number, // primary key
+    statusId: number; // primary key
     status: string // not null, unique
     constructor (statusId: number, status: string){
         this.statusId = statusId
